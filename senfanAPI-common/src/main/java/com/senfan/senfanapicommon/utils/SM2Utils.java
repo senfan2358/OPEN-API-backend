@@ -24,15 +24,15 @@ import java.security.spec.ECGenParameterSpec;
  * 国密
  */
 @Slf4j
-class sm2Utils {
+public class SM2Utils {
     /**
      * 椭圆曲线ECParameters ASN.1 结构
      */
-    private static X9ECParameters x9ECParameters = GMNamedCurves.getByName("sm2p256v1");
+    private final static X9ECParameters x9ECParameters = GMNamedCurves.getByName("sm2p256v1");
     /**
      * 椭圆曲线公钥或私钥的基本域参数
      */
-    private static ECParameterSpec ecDomainParameters = new ECParameterSpec(x9ECParameters.getCurve(), x9ECParameters.getG(), x9ECParameters.getN());
+    private final static ECParameterSpec ecDomainParameters = new ECParameterSpec(x9ECParameters.getCurve(), x9ECParameters.getG(), x9ECParameters.getN());
 
     /**
      * 生成密钥对

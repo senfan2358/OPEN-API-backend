@@ -9,6 +9,7 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import com.senfan.senfanapicommon.common.ErrorCode;
 import com.senfan.senfanapicommon.exception.BusinessException;
+import com.senfan.senfanapicommon.utils.SM2Utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -31,27 +32,15 @@ public class SenfanAPIClient {
         GATEWAY_HOST = gatewayHost;
     }
 
-
-    private Map<String, String> getHeaderMap(long id, String body, String url, String path, String method) {
-        HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("accessKey", accessKey);
-        // 一定不能直接发送
-        // hashMap.put("secretKey",secretKey);
-        hashMap.put("nonce", RandomUtil.randomNumbers(5));
-        hashMap.put("id", String.valueOf(id));
-        hashMap.put("url", url);
-        hashMap.put("path", path);
-        hashMap.put("method", method);
-        // 处理参数中文问题
-        body = URLUtil.encode(body, CharsetUtil.CHARSET_UTF_8);
-        hashMap.put("body", body);
-        // 一定时间内有效
-        hashMap.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
-        // 签名
-        hashMap.put("sign", getSign(body, secretKey));
-        return hashMap;
-    }
-
+    /**
+     * 转发请求调用
+     * @param id
+     * @param params
+     * @param url
+     * @param method
+     * @param path
+     * @return
+     */
     public String invokeInterface(long id, String params, String url, String method, String path) {
 
         log.info("SDK正在转发至GATEWAY_HOST:{}", GATEWAY_HOST);
@@ -73,6 +62,28 @@ public class SenfanAPIClient {
         log.info("SDK调用接口完成，响应数据：{}", result);
         return result;
     }
+
+    private Map<String, String> getHeaderMap(long id, String body, String url, String path, String method) {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("accessKey", accessKey);
+        // 一定不能直接发送
+        // hashMap.put("secretKey",secretKey);
+        hashMap.put("nonce", RandomUtil.randomNumbers(5));
+        hashMap.put("id", String.valueOf(id));
+        hashMap.put("url", url);
+        hashMap.put("path", path);
+        hashMap.put("method", method);
+        // 签名
+        // hashMap.put("sign",getSign(body, secretKey));
+        hashMap.put("sign",SM2Utils.encrypt(accessKey, body));
+        // 处理参数中文问题
+        body = URLUtil.encode(body, CharsetUtil.CHARSET_UTF_8);
+        hashMap.put("body", body);
+        // 一定时间内有效
+        hashMap.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
+        return hashMap;
+    }
+
 
     public HttpResponse postRequest(long id, String params, String url, String method, String path) {
         HttpResponse response = null;

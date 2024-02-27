@@ -15,6 +15,7 @@ import com.senfan.senfanapicommon.common.ErrorCode;
 import com.senfan.senfanapicommon.exception.BusinessException;
 import com.senfan.senfanapicommon.model.entity.InterfaceInfo;
 import com.senfan.senfanapicommon.model.entity.UserInterfaceInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
  *
  */
 @Service
+@Slf4j
 public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, InterfaceInfo>
         implements InterfaceInfoService {
     @Resource
@@ -64,15 +66,15 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         String url = oldInterfaceInfo.getUrl();
         String method = oldInterfaceInfo.getMethod();
         String path = oldInterfaceInfo.getPath();
-        String requestParams = interfaceInfoInvokeRequest.getUserRequestParams();
+        String requestParams = interfaceInfoInvokeRequest.getUserRequestParams().trim();
 
         SenfanAPIClient senfanAPIClient = userService.getSenfanAPIClient(request);
         String invokeResult = null;
         try {
             // 执行方法
             invokeResult = senfanAPIClient.invokeInterface(id, requestParams, url, method, path);
-
         } catch (Exception e) {
+            log.error("方法执行失败，请求路径{}",path,e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口调用失败");
         }
         // 走到下面，接口肯定调用成功了

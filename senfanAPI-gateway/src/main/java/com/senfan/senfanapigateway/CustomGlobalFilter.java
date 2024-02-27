@@ -8,6 +8,7 @@ import com.senfan.senfanapicommon.model.entity.User;
 import com.senfan.senfanapicommon.service.InnerInterfaceInfoService;
 import com.senfan.senfanapicommon.service.InnerUserInterfaceInfoService;
 import com.senfan.senfanapicommon.service.InnerUserService;
+import com.senfan.senfanapicommon.utils.SM2Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
@@ -58,13 +59,12 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getPath().value();
         String method = request.getMethod().toString();
-        log.info("请求唯一标识：" + request.getId());
-        log.info("请求路径：" + path);
-        log.info("请求方法：" + method);
+        log.info("请求路径：{}",path);
+        log.info("请求方法：{}", method);
         log.info("请求参数：" + request.getQueryParams());
         String sourceAddress = request.getLocalAddress().getHostString();
-        log.info("请求来源地址：" + sourceAddress);
-        log.info("请求来源地址：" + request.getRemoteAddress());
+        log.info("请求来源地址：{}",  sourceAddress);
+        log.info("请求来源地址：{}", request.getRemoteAddress());
         ServerHttpResponse response = exchange.getResponse();
         // 2. 访问控制 - 黑白名单
         // if (!IP_WHITE_LIST.contains(sourceAddress)) {
@@ -88,7 +88,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         try {
             invokeUser = innerUserService.getInvokeUser(accessKey);
         } catch (Exception e) {
-            log.error("getInvokeUser error", e);
+            log.error("获取调用用户失败", e);
         }
         if (invokeUser == null) {
             return handleNoAuth(response);
@@ -104,10 +104,10 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         }
         // 实际情况中是从数据库中查出 secretKey
         String secretKey = invokeUser.getSecretKey();
-        // String serverSign = SignUtils.getSign(body, secretKey);
-        // if (sign == null || !sign.equals(serverSign)) {
-        //     return handleNoAuth(response);
-        // }
+        boolean verify = SM2Utils.verify(secretKey, body,sign);
+        if (sign == null || !verify) {
+            return handleNoAuth(response);
+        }
         // 4. 请求的模拟接口是否存在，以及请求方法是否匹配
         InterfaceInfo interfaceInfo = null;
         try {
@@ -124,8 +124,6 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             return handleNoAuth(response);
         }
         // 5. 请求转发，调用模拟接口 + 响应日志
-        //        Mono<Void> filter = chain.filter(exchange);
-        //        return filter;
         return handleResponse(exchange, chain, interfaceInfo.getId(), invokeUser.getId());
 
     }

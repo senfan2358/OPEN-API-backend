@@ -11,6 +11,7 @@ import com.senfan.senfanapicommon.common.ErrorCode;
 import com.senfan.senfanapicommon.constant.UserConstant;
 import com.senfan.senfanapicommon.exception.BusinessException;
 import com.senfan.senfanapicommon.model.entity.User;
+import com.senfan.senfanapicommon.utils.SM2Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -67,8 +68,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             // 2. 加密
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
             // 3. 分配 accessKey，secretKey
-            String accessKey = DigestUtil.md5Hex(SALT+userAccount+ RandomUtil.randomNumbers(5));
-            String secretKey = DigestUtil.md5Hex(SALT+userAccount+ RandomUtil.randomNumbers(8));
+            String[] keys = SM2Utils.getKeys();
+            String accessKey = keys[0];
+            String secretKey = keys[1];
             // 4. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
@@ -203,8 +205,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         User user = checkPassword(userAccount,userPassword);
-        String accessKey = DigestUtil.md5Hex(SALT+userAccount+ RandomUtil.randomNumbers(5));
-        String secretKey = DigestUtil.md5Hex(SALT+userAccount+ RandomUtil.randomNumbers(8));
+        String[] keys = SM2Utils.getKeys();
+        String accessKey = keys[0];
+        String secretKey = keys[1];
         user.setAccessKey(accessKey);
         user.setSecretKey(secretKey);
         int res = userMapper.updateById(user);
