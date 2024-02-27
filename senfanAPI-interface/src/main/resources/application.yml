@@ -1,0 +1,17 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+senfanapi:
+  clent:
+    access-key: senfan
+    secret-key: senfan
+dubbo:
+  application:
+    name: dubbo-senfanAPI-interface
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    id: nacos-registry
+    address: nacos://localhost:8848
