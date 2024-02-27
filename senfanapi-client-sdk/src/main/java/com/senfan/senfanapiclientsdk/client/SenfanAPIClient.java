@@ -15,21 +15,29 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.senfan.senfanapiclientsdk.utils.SignUtils.getSign;
-
 @Slf4j
 public class SenfanAPIClient {
     private String accessKey;
     private String secretKey;
-    private static String GATEWAY_HOST = "http://localhost:8090";
+    private String gatewayHost;
 
     public SenfanAPIClient(String accessKey, String secretKey) {
         this.secretKey = secretKey;
         this.accessKey = accessKey;
     }
 
-    public void setGateway_Host(String gatewayHost) {
-        GATEWAY_HOST = gatewayHost;
+    public SenfanAPIClient(String accessKey, String secretKey, String gatewayHost) {
+        this.accessKey = accessKey;
+        this.secretKey = secretKey;
+        this.gatewayHost = gatewayHost;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     /**
@@ -43,7 +51,7 @@ public class SenfanAPIClient {
      */
     public String invokeInterface(long id, String params, String url, String method, String path) {
 
-        log.info("SDK正在转发至GATEWAY_HOST:{}", GATEWAY_HOST);
+        log.info("SDK正在转发至GATEWAY_HOST:{}", gatewayHost);
         HttpResponse response = null;
         if ("POST".equals(method)) {
             response = postRequest(id, params, url, method, path);
@@ -51,11 +59,15 @@ public class SenfanAPIClient {
             response = getRequest(id, params, url, method, path);
         }
         // 错误响应码处理
-        if (response.getStatus() != 200){
-            if (response.getStatus() == 404){
+        int status = response.getStatus();
+        if (status != 200){
+            if (status == 404){
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR,"接口不存在");
             }
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+            if (status == 500){
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+            }
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String body = response.body();
         String result = JSONUtil.formatJsonStr(body);
@@ -88,7 +100,7 @@ public class SenfanAPIClient {
     public HttpResponse postRequest(long id, String params, String url, String method, String path) {
         HttpResponse response = null;
         try {
-            response = HttpRequest.post(GATEWAY_HOST + path)
+            response = HttpRequest.post(gatewayHost + path)
                     // 处理中文编码
                     .header("Accept-Charset", CharsetUtil.UTF_8)
                     .addHeaders(getHeaderMap(id, params, method, path, url))
@@ -115,7 +127,7 @@ public class SenfanAPIClient {
         try {
             Map<String, Object> bean = JSONUtil.toBean(params, Map.class);
             // 发送 GET 请求并带有 JSON 请求参数
-            response = HttpRequest.get(GATEWAY_HOST + path)
+            response = HttpRequest.get(gatewayHost + path)
                     .header("Accept-Charset", CharsetUtil.UTF_8)
                     .addHeaders(getHeaderMap(id, params, method, path, url))
                     .form(bean)

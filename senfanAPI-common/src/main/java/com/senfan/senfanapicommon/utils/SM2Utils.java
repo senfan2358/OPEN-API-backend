@@ -1,6 +1,7 @@
 package com.senfan.senfanapicommon.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.gm.GMNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.engines.SM2Engine;
@@ -74,6 +75,7 @@ public class SM2Utils {
 
     /**
      * 公钥加密,默认模式1
+     *
      * @param publicKey
      * @param data
      * @return
@@ -81,6 +83,7 @@ public class SM2Utils {
     public static String encrypt(String publicKey, String data) {
         return encrypt(getECPublicKeyByPublicKeyHex(publicKey), data, 1);
     }
+
     /**
      * 公钥加密
      *
@@ -90,6 +93,9 @@ public class SM2Utils {
      * @return
      */
     public static String encrypt(BCECPublicKey publicKey, String data, int modeType) {
+        if (StringUtils.isBlank(data)) {
+            return null;
+        }
         // 加密模式
         SM2Engine.Mode mode;
         if (modeType == 1) {
@@ -142,6 +148,7 @@ public class SM2Utils {
 
     /**
      * 私钥解密，默认模式1
+     *
      * @param privateKey
      * @param cipherData
      * @return
@@ -149,6 +156,7 @@ public class SM2Utils {
     public static String decrypt(String privateKey, String cipherData) {
         return decrypt(getBCECPrivateKeyByPrivateKeyHex(privateKey), cipherData, 1);
     }
+
     /**
      * 私钥解密
      *
@@ -157,6 +165,9 @@ public class SM2Utils {
      * @return
      */
     public static String decrypt(BCECPrivateKey privateKey, String cipherData, int modeType) {
+        if (StringUtils.isBlank(cipherData)) {
+            return null;
+        }
         // 解密模式
         SM2Engine.Mode mode;
         if (modeType == 1) {
@@ -234,13 +245,14 @@ public class SM2Utils {
 
     /**
      * 国密验证
+     *
      * @param privateKey
      * @param content
      * @param sign
      * @param modeType
      * @return
      */
-    public static boolean verify(String privateKey, String content, String sign,int modeType) {
+    public static boolean verify(String privateKey, String content, String sign, int modeType) {
         String encryptContent = decrypt(privateKey, sign, modeType);
         if (!content.equals(encryptContent)) {
             return false;
@@ -250,12 +262,19 @@ public class SM2Utils {
 
     /**
      * 国密验证，默认模式1
+     *
      * @param privateKey
      * @param content
      * @param sign
      * @return
      */
     public static boolean verify(String privateKey, String content, String sign) {
+        if (StringUtils.isBlank(content) && StringUtils.isBlank(sign)){
+            return true;
+        }
+        if (StringUtils.isAnyBlank(content,sign)){
+            return false;
+        }
         String encryptContent = decrypt(privateKey, sign, 1);
         if (!content.equals(encryptContent)) {
             return false;
@@ -283,12 +302,12 @@ public class SM2Utils {
         String privateKey = keys[1];
         System.out.println(publicKey);
         System.out.println(privateKey);
-        String sign = encrypt("043e9e993d5e0eb9f9a92808c88d9ab657e19560f394ff67b68f40f18c47165c170dacb937c08e042bf8e5d1302ce28bedd51c0925c1f9993b585044d6b43bf686", "sadas");
+        String sign = encrypt("043e9e993d5e0eb9f9a92808c88d9ab657e19560f394ff67b68f40f18c47165c170dacb937c08e042bf8e5d1302ce28bedd51c0925c1f9993b585044d6b43bf686", "");
         String decrypt = decrypt("9ede4b055debfbeeb88bf1113ea05a19c8a2123653a39b0a54cb116d5dd281c6", sign);
-        boolean res = verify("9ede4b055debfbeeb88bf1113ea05a19c8a2123653a39b0a54cb116d5dd281c6", "sadas", sign);
+        boolean res = verify("9ede4b055debfbeeb88bf1113ea05a19c8a2123653a39b0a54cb116d5dd281c6", "", sign);
         System.out.println(res);
         System.out.println(decrypt);
-        String temp = encrypt(publicKey,"senfan");
+        String temp = encrypt(publicKey, "senfan");
         String resTemp = decrypt(privateKey, temp);
         boolean senfan = verify(privateKey, "senfan", temp);
         System.out.println(resTemp);

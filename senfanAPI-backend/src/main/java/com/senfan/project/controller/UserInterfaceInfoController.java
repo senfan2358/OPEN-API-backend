@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.senfan.project.annotation.AuthCheck;
 import com.senfan.project.model.dto.userInterfaceInfo.UserInterfaceInfoAddRequest;
+import com.senfan.project.model.dto.userInterfaceInfo.UserInterfaceInfoInvokeRequest;
 import com.senfan.project.model.dto.userInterfaceInfo.UserInterfaceInfoQueryRequest;
 import com.senfan.project.model.dto.userInterfaceInfo.UserInterfaceInfoUpdateRequest;
+import com.senfan.project.model.vo.UserInterfaceInfoInvokeVO;
 import com.senfan.project.service.UserInterfaceInfoService;
 import com.senfan.project.service.UserService;
 import com.senfan.senfanapiclientsdk.client.SenfanAPIClient;
@@ -28,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
- * 接口管理
+ * 用户接口管理
  *
  * @author senfan
  */
@@ -200,6 +202,27 @@ public class UserInterfaceInfoController {
         return ResultUtils.success(userInterfaceInfoPage);
     }
 
-    // endregion
+    /**
+     * 接口调用记录获取
+     * @param userInterfaceInfoInvokeRequest
+     * @param request
+     * @return
+     */
+    @GetMapping("/listInterfaceInvoke/page")
+    public BaseResponse<List<UserInterfaceInfoInvokeVO>> listInterfaceInvokeByPage(UserInterfaceInfoInvokeRequest userInterfaceInfoInvokeRequest, HttpServletRequest request) {
+        if (userInterfaceInfoInvokeRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long current = userInterfaceInfoInvokeRequest.getCurrent();
+        long size = userInterfaceInfoInvokeRequest.getPageSize();
+        String sortField = userInterfaceInfoInvokeRequest.getSortField();
+        String sortOrder = userInterfaceInfoInvokeRequest.getSortOrder();
+        // 限制爬虫
+        if (size > 50) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<UserInterfaceInfoInvokeVO> userInterfaceInfoPage = userInterfaceInfoService.listInterfaceInvokeByPage(userInterfaceInfoInvokeRequest,request);
 
+        return ResultUtils.success(userInterfaceInfoPage);
+    }
 }

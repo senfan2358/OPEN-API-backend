@@ -1,7 +1,13 @@
 package com.senfan.project.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.senfan.project.model.dto.userInterfaceInfo.UserInterfaceInfoInvokeRequest;
+import com.senfan.project.model.vo.UserInterfaceInfoInvokeVO;
 import com.senfan.senfanapicommon.model.entity.UserInterfaceInfo;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  *
@@ -34,4 +40,6 @@ public interface UserInterfaceInfoService extends IService<UserInterfaceInfo> {
      * @return
      */
     boolean isHaveInvokeCount(long userId,long interfaceInfoId);
+
+    List<UserInterfaceInfoInvokeVO> listInterfaceInvokeByPage(UserInterfaceInfoInvokeRequest userInterfaceInfoInvokeRequest, HttpServletRequest request);
 }

@@ -2,22 +2,29 @@ package com.senfan.project.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.senfan.project.mapper.InterfaceInfoMapper;
 import com.senfan.project.mapper.UserInterfaceInfoMapper;
 import com.senfan.project.mapper.UserMapper;
+import com.senfan.project.model.dto.userInterfaceInfo.UserInterfaceInfoInvokeRequest;
+import com.senfan.project.model.vo.UserInterfaceInfoInvokeVO;
 import com.senfan.project.service.UserInterfaceInfoService;
+import com.senfan.project.service.UserService;
 import com.senfan.senfanapicommon.common.ErrorCode;
+import com.senfan.senfanapicommon.constant.CommonConstant;
 import com.senfan.senfanapicommon.constant.UserConstant;
 import com.senfan.senfanapicommon.exception.BusinessException;
 import com.senfan.senfanapicommon.model.entity.InterfaceInfo;
 import com.senfan.senfanapicommon.model.entity.User;
 import com.senfan.senfanapicommon.model.entity.UserInterfaceInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +43,8 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
     private InterfaceInfoMapper interfaceInfoMapper;
     @Resource
     private UserMapper userMapper;
-
+    @Resource
+    private UserService userService;
     @Override
     public void validUserInterfaceInfo(UserInterfaceInfo userInterfaceInfo, boolean add) {
         if (userInterfaceInfo == null) {
@@ -147,6 +155,15 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         } else {
             return true;
         }
+    }
+
+    @Override
+    public List<UserInterfaceInfoInvokeVO> listInterfaceInvokeByPage(UserInterfaceInfoInvokeRequest userInterfaceInfoInvokeRequest, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        userInterfaceInfoInvokeRequest.setUserId(loginUser.getId());
+
+        List<UserInterfaceInfoInvokeVO> list = userInterfaceInfoMapper.listInterfaceInvokeByPage(userInterfaceInfoInvokeRequest);
+        return list;
     }
 
 }

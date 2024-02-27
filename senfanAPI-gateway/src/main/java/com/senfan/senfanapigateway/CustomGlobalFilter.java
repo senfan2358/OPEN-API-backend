@@ -51,7 +51,6 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     private static final List<String> IP_WHITE_LIST = Arrays.asList("127.0.0.1");
 
-    private static final String INTERFACE_HOST = "http://localhost:8123";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -113,7 +112,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         try {
             interfaceInfo = innerInterfaceInfoService.getInterfaceInfo(path, method);
         } catch (Exception e) {
-            log.error("getInterfaceInfo error", e);
+            log.error("获取接口信息失败", e);
         }
         if (interfaceInfo == null) {
             return handleNoAuth(response);
@@ -172,7 +171,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                                         String data = new String(content, StandardCharsets.UTF_8); //data
                                         sb2.append(data);
                                         // 打印日志
-                                        log.info("响应结果：" + data);
+                                        log.info("响应结果：{}" ,data);
                                         return bufferFactory.wrap(content);
                                     }));
                         } else {
@@ -187,7 +186,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             }
             return chain.filter(exchange); // 降级处理返回数据
         } catch (Exception e) {
-            log.error("网关处理响应异常" + e);
+            log.error("网关处理响应异常", e);
             return chain.filter(exchange);
         }
     }

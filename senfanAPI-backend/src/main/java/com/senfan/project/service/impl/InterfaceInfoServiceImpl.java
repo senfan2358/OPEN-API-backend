@@ -48,13 +48,13 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         }
         String name = interfaceInfo.getName();
         String description = interfaceInfo.getDescription();
-        String url = interfaceInfo.getUrl();
+        String path = interfaceInfo.getPath();
         String requestHeader = interfaceInfo.getRequestHeader();
         String responseHeader = interfaceInfo.getResponseHeader();
         String method = interfaceInfo.getMethod();
         // 创建时，所有参数必须非空
         if (add) {
-            if (StringUtils.isAnyBlank(name, description, url, method)) {
+            if (StringUtils.isAnyBlank(name, description, path, method)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR);
             }
         }
@@ -66,7 +66,10 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         String url = oldInterfaceInfo.getUrl();
         String method = oldInterfaceInfo.getMethod();
         String path = oldInterfaceInfo.getPath();
-        String requestParams = interfaceInfoInvokeRequest.getUserRequestParams().trim();
+        String requestParams = interfaceInfoInvokeRequest.getUserRequestParams();
+        if (!StringUtils.isBlank(requestParams)){
+            requestParams = requestParams.trim();
+        }
 
         SenfanAPIClient senfanAPIClient = userService.getSenfanAPIClient(request);
         String invokeResult = null;

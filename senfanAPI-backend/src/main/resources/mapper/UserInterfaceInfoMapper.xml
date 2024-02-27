@@ -25,4 +25,21 @@
         select interfaceInfoId, sum(totalNum) as totalNum from user_interface_info group by interfaceInfoId
         order by totalNum desc limit #{limit};
     </select>
+    <select id="listInterfaceInvokeByPage" resultType="com.senfan.project.model.vo.UserInterfaceInfoInvokeVO">
+        select * from user_interface_info a
+        left join interface_info b
+        on a.interfaceInfoId = b.id
+        <where>
+            1 = 1
+            <if test="userId != null and userId != ''">
+                and a.userId = #{userId}
+            </if>
+            <if test="name != null and name != ''">
+                and b.name like concat('%',#{name},'%')
+            </if>
+            <if test="description != null and description != ''">
+                and b.description like concat('%',#{description},'%')
+            </if>
+        </where>
+    </select>
 </mapper>

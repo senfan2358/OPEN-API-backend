@@ -35,7 +35,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private UserMapper userMapper;
-
+    @Resource
+    private SenfanAPIClient senfanAPIClient;
     /**
      * 盐值，混淆密码
      */
@@ -164,7 +165,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
         //log.info("admin生成ReApiClient，secretKey为：{}",secretKey);
-        SenfanAPIClient senfanAPIClient = new SenfanAPIClient(accessKey, secretKey);
+
+        senfanAPIClient.setAccessKey(accessKey);
+        senfanAPIClient.setSecretKey(secretKey);
+
         // 设置网关地址，使用配置类，直接注入新网关地址，避免魔法值，方便上线
         // SenfanAPIClient.setGateway_Host(gatewayConfig.getHost());
         return senfanAPIClient;

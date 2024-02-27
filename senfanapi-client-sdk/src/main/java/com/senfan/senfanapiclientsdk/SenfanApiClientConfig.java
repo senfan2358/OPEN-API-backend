@@ -14,8 +14,9 @@ import org.springframework.context.annotation.Configuration;
 public class SenfanApiClientConfig {
     private String accessKey;
     private String secretKey;
+    private String gatewayHost;
     @Bean
     public SenfanAPIClient senfanAPIClient(){
-        return new SenfanAPIClient(accessKey,secretKey);
+        return new SenfanAPIClient(accessKey,secretKey,gatewayHost);
     }
 }
